@@ -1,3 +1,6 @@
 #! /bin/bash
+TIMESTAMP=`date +%Y-%m-%d`
+alias docker='sudo docker.io'
+sed -i "s/ENV REFRESHED_AT .*$/ENV REFRESHED_AT $TIMESTAMP/" Dockerfile
 docker build -t diegocortassa/tacticdev .
-docker build -t diegocortassa/tactic:4.2.0.a01 .
+docker push diegocortassa/tacticdev
