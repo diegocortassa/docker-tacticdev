@@ -23,9 +23,9 @@ Download image with:
 
 Run the container with:
 
-    $ docker run -d -p 80:80 -p 2222:22 -e ROOT_PASSWORD="my_secure_root_password" diegocortassa/tacticdev
-    (remember to set ROOT_PASSWORD)
+    $ docker run -d -p 80:80 -p 2222:22 diegocortassa/tacticdev
 
 - connect with your browser to http://localhost to use tactic.
-- use "ssh root@localhost -p 2222" for shell access.
 
+
+For ssh access uncomment ssh section in Dockerfile and supervisord.conf and rebuild image

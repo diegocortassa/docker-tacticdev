@@ -1,16 +1,12 @@
 ############################################################
 # Dockerfile to run Tactic Containers 
-# Based on Centos 6 image
+# Based on Centos 7 image
 ############################################################
 
-FROM centos:centos6
+FROM centos:centos7
 MAINTAINER Diego Cortassa <diego@cortassa.net>
 
-ENV REFRESHED_AT 2016-04-22
-
-# Reinstall glibc-common to get deleted files (i.e. locales, encoding UTF8) from the centos docker image
-#RUN yum -y reinstall glibc-common
-RUN yum -y update glibc-common
+ENV REFRESHED_AT 2018-02-22
 
 # Setup a minimal env
 ENV LANG en_US.UTF-8
@@ -22,39 +18,38 @@ ENV HOME /root
 RUN echo 'export PS1="[\u@docker] \W # "' >> /root/.bash_profile
 
 # Install dependecies
-RUN yum -y install httpd postgresql postgresql-server postgresql-contrib python-lxml python-imaging python-crypto python-psycopg2 unzip git ImageMagick
+RUN yum -y install httpd postgresql postgresql-server postgresql-contrib python-lxml python-imaging python-crypto python-psycopg2 unzip git ImageMagick; yum clean all
 # TODO add ffmpeg
 
 # install supervisord
-RUN /bin/rpm -Uvh http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm && \
-    yum -y install python-setuptools && \
-    easy_install supervisor && \
-    mkdir -p /var/log/supervisor && \ 
-    mkdir -p /etc/supervisor/conf.d/
+RUN yum -y install epel-release && \
+    yum -y install supervisor && \
+    yum clean all
 ADD supervisord.conf /etc/supervisor/supervisord.conf
 
 # Ssh server
-# start and stop the server to make it generate host keys
-RUN yum -y install openssh-server && \
-    service sshd start && \
-    service sshd stop
-# set root passord at image launch with -e ROOT_PASSWORD=my_secure_password
+# Uncomment sshd in supervisord.conf
+# Specify root password at container launch with "-e ROOT_PASSWORD=mysupersecurepassword"
+#RUN yum -y install openssh-server && \
+#    service sshd start && \
+#    ssh-keygen -A
+
+# Entry point for launching supervisord when container is started
 ADD bootstrap.sh /usr/local/bin/bootstrap.sh
 
-# Clean up
-RUN yum clean all
-
-# initialize postgresql data files
-RUN service postgresql initdb
+# Patch postgresql-setup not to use systemd and initialize postgresql data files
+RUN sed -i -e 's/systemctl show -p Environment "${SERVICE_NAME}.service" |/echo "Environment=PGPORT=5432 PGDATA=\/var\/lib\/pgsql\/data" |/' /usr/bin/postgresql-setup && \
+    postgresql-setup initdb
 
 # get and install Tactic
-RUN git clone -b 4.6 https://github.com/Southpaw-TACTIC/TACTIC.git && \
+RUN git clone --depth 1 --branch 4.6 https://github.com/Southpaw-TACTIC/TACTIC.git && \
     cp TACTIC/src/install/postgresql/pg_hba.conf /var/lib/pgsql/data/pg_hba.conf && \
     chown postgres:postgres /var/lib/pgsql/data/pg_hba.conf && \
-    service postgresql start && \
+    su postgres -c '/usr/bin/postgres -D /var/lib/pgsql/data -p 5432 2>&1 >/dev/null &' && \
     yes | python TACTIC/src/install/install.py -d && \
-    service postgresql stop && \
+    su postgres -c '/usr/bin/pg_ctl stop -D /var/lib/pgsql/data -s -m fast' && \
     cp /home/apache/tactic_data/config/tactic.conf /etc/httpd/conf.d/ && \
+    sed -i -e 's/#Require all granted/Require all granted/' /etc/httpd/conf.d/tactic.conf && \
     rm -r TACTIC
 
 EXPOSE 80 22
