@@ -2,7 +2,6 @@ docker-tactic
 =================
 
 Tactic docker image.
-** this is a the development version do not use in production!
 
 TACTIC
 ------
@@ -19,13 +18,17 @@ On a recent ubuntu just use "sudo apt-get update; sudo apt-get install docker.io
 
 Download image with:
 
-    $ docker docker pull diegocortassa/tacticdev
+    $ docker docker pull diegocortassa/tactic
 
 Run the container with:
 
-    $ docker run -d -p 80:80 -p 2222:22 diegocortassa/tacticdev
+    $ docker run -d --name tactic --volume=/tactic-docker/tactic:/opt/tactic --volume=/tactic-docker/postgres-data:/var/lib/pgsql/data -p 80:80 diegocortassa/tactic
+
+/opt/tactic contains tactic config and data
+/var/lib/pgsql/data contains the postgres database
 
 - connect with your browser to http://localhost to use tactic.
 
-
-For ssh access uncomment ssh section in Dockerfile and supervisord.conf and rebuild image
+***
+This version puls the latest git commits and starts in dev mode for debugging launch it with
+docker run -it --name tacticdev --volume=/tactic-docker/tactic:/opt/tactic --volume=/tactic-docker/postgres-data:/var/lib/pgsql/data -p 80:80 diegocortassa/tacticdev
