@@ -30,5 +30,5 @@ Run the container with:
 - connect with your browser to http://localhost to use tactic.
 
 ***
-This version puls the latest git commits and starts in dev mode for debugging launch it with
+This version pulls the latest git commits and starts in dev mode for debugging launch it with
 docker run -it --name tacticdev --volume=/tactic-docker/tactic:/opt/tactic --volume=/tactic-docker/postgres-data:/var/lib/pgsql/data -p 80:80 diegocortassa/tacticdev
