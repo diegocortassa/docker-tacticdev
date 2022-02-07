@@ -3,10 +3,10 @@
 # Based on Centos 8 image
 ############################################################
 
-FROM centos:centos8
+FROM rockylinux:8
 MAINTAINER Diego Cortassa <diego@cortassa.net>
 
-ENV REFRESHED_AT 2021-06-19
+ENV REFRESHED_AT 2022-02-07
 
 # Install locale (not included in centos docker image)
 RUN dnf -y install glibc-langpack-*
@@ -31,11 +31,14 @@ RUN dnf -y install \
     httpd \
     postgresql \
     postgresql-server \
-    python38 \
+    python39 \
     unzip \
+    xz \
     git-core \
-    ImageMagick && \
-    dnf clean all
+    ImageMagick
+
+# Needed to build python-ldap
+RUN dnf -y install gcc python39-devel openldap-devel
 
 RUN pip3 install \
     psycopg2-binary \
@@ -46,7 +49,21 @@ RUN pip3 install \
     pytz \
     jaraco.functools \
     requests \
+    python-ldap \
     supervisor
+
+# remove unneeded packages
+RUN dnf -y remove \
+    cpp \
+    cyrus-sasl \
+    cyrus-sasl-devel \
+    glibc-devel \
+    glibc-headers \
+    isl \
+    kernel-headers \
+    libmpc \
+    libxcrypt-devel && \
+    dnf clean all
 
 # add ffmpeg
 RUN curl -L -O https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz && \
@@ -55,7 +72,7 @@ RUN curl -L -O https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-st
     rm -rf ffmpeg-*-static*
 
 # get Tactic source
-RUN git clone --depth 1 https://github.com/Southpaw-TACTIC/TACTIC.git
+RUN git clone -b 4.9 --depth 1 https://github.com/Southpaw-TACTIC/TACTIC.git
 RUN cp TACTIC/src/install/apache/tactic.conf /etc/httpd/conf.d/
 
 EXPOSE 80 22
