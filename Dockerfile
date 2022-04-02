@@ -6,7 +6,7 @@
 FROM rockylinux:8
 MAINTAINER Diego Cortassa <diego@cortassa.net>
 
-ENV REFRESHED_AT 2022-02-07
+ENV REFRESHED_AT 2022-04-02
 
 # Install locale (not included in centos docker image)
 RUN dnf -y install glibc-langpack-*
