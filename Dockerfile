@@ -3,10 +3,10 @@
 # Based on Rocky Linux 8 image
 ############################################################
 
-FROM rockylinux:8
-MAINTAINER Diego Cortassa <diego@cortassa.net>
+FROM rockylinux:9
+LABEL maintainer="Diego Cortassa <diego@cortassa.net>"
 
-ENV REFRESHED_AT 2022-04-02
+ENV REFRESHED_AT 2024-11-24
 
 # Install locale (not included in centos docker image)
 RUN dnf -y install glibc-langpack-*
@@ -38,7 +38,7 @@ RUN dnf -y install \
     ImageMagick
 
 # Needed to build python-ldap
-RUN dnf -y install gcc python39-devel openldap-devel
+RUN dnf -y install gcc python-devel openldap-devel
 
 RUN pip3 install \
     psycopg2-binary \
@@ -72,7 +72,7 @@ RUN curl -L -O https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-st
     rm -rf ffmpeg-*-static*
 
 # get Tactic source
-RUN git clone -b 4.9 --depth 1 https://github.com/Southpaw-TACTIC/TACTIC.git
+RUN git clone -b 5.0 --depth 1 https://github.com/Southpaw-TACTIC/TACTIC.git
 RUN cp TACTIC/src/install/apache/tactic.conf /etc/httpd/conf.d/
 
 EXPOSE 80
